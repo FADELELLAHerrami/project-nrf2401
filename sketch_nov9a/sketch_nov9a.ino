@@ -6,6 +6,7 @@ RF24 radio(7, 8);  // CE, CSN
 const byte address[6] = "00001";
 // Broches pour chaque segment (a, b, c, d, e, f, g, dp)
 const int segments[] = {9,10,2,3,4,5,6};
+const int buzzerPin = 0;  // Broche du buzzer
 
 void setup() {
   Serial.begin(9600);
@@ -18,7 +19,7 @@ void setup() {
     pinMode(segments[i], OUTPUT);
   }
   displayDigit(0);
-
+  pinMode(buzzerPin, OUTPUT);  // Définir la broche du buzzer en tant que sortie
 }
 
 void loop() {
@@ -27,6 +28,7 @@ void loop() {
     radio.read(&receivedIndex, sizeof(receivedIndex));
     if (receivedIndex != 0) {
       displayDigit(receivedIndex);
+      activateBuzzer();  // Activer le buzzer lors de la réception d'un index
     }
   }
 }
@@ -50,4 +52,12 @@ void displayDigit(int digit) {
   for (int i = 0; i < 8; i++) {
     digitalWrite(segments[i], !bitRead(digitSegments[digit], i)); // Inverser la valeur (LOW pour activer les segments)
   }
+}
+
+
+
+void activateBuzzer() {
+  digitalWrite(buzzerPin, HIGH);  // Activer le buzzer
+  delay(1000);  // Sonnerie pendant 1 seconde (ajustez la durée au besoin)
+  digitalWrite(buzzerPin, LOW);  // Désactiver le buzzer
 }
