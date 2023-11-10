@@ -5,8 +5,12 @@
 RF24 radio(7, 8);  // CE, CSN
 const byte address[6] = "00001";
 // Broches pour chaque segment (a, b, c, d, e, f, g, dp)
-const int segments[] = {9,10,2,3,4,5,6};
+const int segments[] = {9, 10, 2, 3, 4, 5, 6};
+// for push button
+const int boutonPin = A1;
 
+bool boutonEtatActuel = HIGH;
+bool boutonEtatPrecedent = HIGH;
 
 void setup() {
   Serial.begin(9600);
@@ -14,14 +18,16 @@ void setup() {
   radio.openReadingPipe(1, address);  // Adresse du récepteur
   radio.setPALevel(RF24_PA_LOW);      // Réglez la puissance de réception en fonction de vos besoins
   radio.startListening();
-  //for led
+  // for led
   pinMode(A0, OUTPUT);
+  // for push button
+  pinMode(boutonPin, INPUT_PULLUP);
   // for 7 segment
   for (int i = 0; i <= 6; i++) {
     pinMode(segments[i], OUTPUT);
   }
   displayDigit(0);
-    // Définir la broche du buzzer en tant que sortie
+  // Définir la broche du buzzer en tant que sortie
 }
 
 void loop() {
@@ -33,8 +39,17 @@ void loop() {
       activateLed();
     }
   }
-}
 
+  boutonEtatActuel = digitalRead(boutonPin);
+
+  if (boutonEtatActuel == LOW && boutonEtatPrecedent == HIGH) {
+    // Bouton enfoncé
+    displayDigit(0);  // Afficher 0 dans le 7 segments
+    analogWrite(A0, 0); // Éteindre la LED
+  }
+
+  boutonEtatPrecedent = boutonEtatActuel;
+}
 
 void displayDigit(int digit) {
   // Tableau de segments pour les chiffres 0-9 (inversé pour un afficheur à anode commune)
@@ -56,11 +71,6 @@ void displayDigit(int digit) {
   }
 }
 
-
-
 void activateLed() {
   analogWrite(A0, 128);
-  delay(6000); // Attendre 1 seconde
-  analogWrite(A0, 0);
-  delay(1000); // Attendre 1 seconde
 }
